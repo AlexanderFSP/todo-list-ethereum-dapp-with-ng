@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Provider } from '@ethersproject/providers';
-import { Contract, ContractInterface, ethers, Signer } from 'ethers';
+import { ethers } from 'ethers';
 
 /**
  * A Contract is an abstraction which represents a connection to a specific contract on the
@@ -12,9 +11,9 @@ import { Contract, ContractInterface, ethers, Signer } from 'ethers';
 export class EthersContractService {
   public createContract(
     addressOrName: string,
-    contractInterface: ContractInterface,
-    signerOrProvider?: Signer | Provider
-  ): Contract {
+    contractInterface: ethers.ContractInterface,
+    signerOrProvider?: ethers.Signer | ethers.providers.Provider
+  ): ethers.Contract {
     return new ethers.Contract(addressOrName, contractInterface, signerOrProvider);
   }
 }

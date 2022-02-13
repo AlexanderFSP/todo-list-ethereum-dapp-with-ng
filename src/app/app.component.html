@@ -1,17 +1,9 @@
-<p>MetaMask installation status: {{ metamaskService.isMetamaskInstalled }}</p>
+<mat-toolbar color="primary">
+  <span>todo-list-ethereum-dapp-with-ng</span>
 
-<p>
-  Current account:
-
-  <ng-container *ngIf="metamaskService.currentAccount$ | async as currentAccount; else loginButtonTpl">
-    {{ currentAccount }}
-
-    <button (click)="sendEther()">Send ether</button>
-  </ng-container>
-
-  <ng-template #loginButtonTpl>
-    <button (click)="login()">Login</button>
-  </ng-template>
-</p>
-
-<button (click)="inspectContrat()">Inspect contract</button>
+  <app-metamask-account
+    [isMetamaskInstalled]="ethersProviderService.isMetamaskInstalled$ | async"
+    [currentAccount]="ethersSignerService.currentAccount$ | async"
+    (connect)="onConnect()"
+  ></app-metamask-account>
+</mat-toolbar>

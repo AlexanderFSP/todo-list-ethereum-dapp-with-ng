@@ -1,0 +1,13 @@
+<button *ngIf="isMetamaskInstalled; else installMetamaskLinkTpl" mat-raised-button (click)="onClick()">
+  <img class="metamask-account__fox" src="assets/images/metamask-fox.svg" alt="" />
+
+  {{ currentAccount || 'Connect wallet' }}
+</button>
+
+<ng-template #installMetamaskLinkTpl>
+  <a mat-raised-button href="https://metamask.io/" target="_blank" rel="noopener noreferrer">
+    <img class="metamask-account__fox" src="assets/images/metamask-fox.svg" alt="" />
+
+    Install MetaMask
+  </a>
+</ng-template>
