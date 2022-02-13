@@ -1,1 +1,17 @@
-<p>root works!</p>
+<p>MetaMask installation status: {{ metamaskService.isMetamaskInstalled }}</p>
+
+<p>
+  Current account:
+
+  <ng-container *ngIf="metamaskService.currentAccount$ | async as currentAccount; else loginButtonTpl">
+    {{ currentAccount }}
+
+    <button (click)="sendEther()">Send ether</button>
+  </ng-container>
+
+  <ng-template #loginButtonTpl>
+    <button (click)="login()">Login</button>
+  </ng-template>
+</p>
+
+<button (click)="inspectContrat()">Inspect contract</button>
