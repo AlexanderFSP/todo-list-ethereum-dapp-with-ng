@@ -1,7 +1,8 @@
-import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { MetamaskAccountComponent } from './metamask-account.component';
+import { NgModule } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
+
+import { MetamaskAccountComponent } from './metamask-account.component';
 
 @NgModule({
   declarations: [MetamaskAccountComponent],

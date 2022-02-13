@@ -1,8 +1,8 @@
 import { Injectable, NgZone } from '@angular/core';
-import { BehaviorSubject, Observable } from 'rxjs';
-import { nullable, Nullable } from '@core/models';
+import { Nullable, nullable } from '@core/models';
 import { Address } from '@core/models/web3';
 import { ethers } from 'ethers';
+import { BehaviorSubject, Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'

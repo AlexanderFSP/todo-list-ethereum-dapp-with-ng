@@ -55,6 +55,7 @@ module.exports = {
             ignoreStatic: true
           }
         ],
+        '@typescript-eslint/no-non-null-assertion': 'off',
 
         // ========== '@angular-eslint' plugin ==========
         '@angular-eslint/component-selector': [

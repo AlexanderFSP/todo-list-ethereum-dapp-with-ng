@@ -1,10 +1,11 @@
 import { Inject, Injectable } from '@angular/core';
 import { Nullable } from '@core/models';
 import detectEthereumProvider from '@metamask/detect-provider';
+import { WINDOW } from '@ng-web-apis/common';
 import { ethers } from 'ethers';
 import { BehaviorSubject, Observable } from 'rxjs';
+
 import { EthersSignerService } from './ethers-signer.service';
-import { WINDOW } from '@ng-web-apis/common';
 
 interface IMetamaskWindow extends Window {
   ethereum?: {
@@ -50,8 +51,6 @@ export class EthersProviderService {
       this._isProviderInitialized$.next(true);
 
       this.setupSigner();
-
-      return;
     }
   }
 
@@ -59,14 +58,12 @@ export class EthersProviderService {
    * a.k.a. login
    */
   public requestAccounts(): Promise<string[]> {
-    return this.provider!.send('eth_requestAccounts', []);
+    return this.provider!.send('eth_requestAccounts', []) as Promise<string[]>;
   }
 
   private setupSigner(): void {
     this.ethersSignerService.setSigner(this.provider!.getSigner());
 
-    this.window.ethereum!.on('accountsChanged', (_accounts: string[]) =>
-      this.ethersSignerService.setSigner(this.provider!.getSigner())
-    );
+    this.window.ethereum!.on('accountsChanged', () => this.ethersSignerService.setSigner(this.provider!.getSigner()));
   }
 }
