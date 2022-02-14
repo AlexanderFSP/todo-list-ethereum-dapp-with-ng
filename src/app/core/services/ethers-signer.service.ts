@@ -29,6 +29,10 @@ export class EthersSignerService {
     this.updateCurrentAccount();
   }
 
+  public connectContractWithSigner(contract: ethers.Contract): ethers.Contract {
+    return contract.connect(this.signer!);
+  }
+
   private async updateCurrentAccount(): Promise<void> {
     let address: string;
 
