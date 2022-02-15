@@ -1,6 +1,6 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
-import { MatSelectionListChange } from '@angular/material/list';
+import { MatSelectionList, MatSelectionListChange } from '@angular/material/list';
 import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ethers } from 'ethers';
@@ -26,6 +26,8 @@ interface ITask extends Omit<IEthersTask, 'id'> {
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent {
+  @ViewChild(MatSelectionList) public selectionList!: MatSelectionList;
+
   public tasks$: Observable<ITask[]>;
 
   public readonly newTask = new FormControl('');
@@ -67,6 +69,8 @@ export class AppComponent {
   }
 
   public async onSelectionChange({ option }: MatSelectionListChange): Promise<void> {
+    this.selectionList.setDisabledState(true);
+
     const task = option.value as ITask;
 
     try {
@@ -80,6 +84,8 @@ export class AppComponent {
     } catch {
       // Revert selection
       option.toggle();
+    } finally {
+      this.selectionList.setDisabledState(false);
     }
   }
 
