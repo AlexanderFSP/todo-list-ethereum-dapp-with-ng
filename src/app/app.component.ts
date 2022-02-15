@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { Contract } from 'ethers';
+import { ethers } from 'ethers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
 
@@ -24,7 +24,7 @@ export class AppComponent {
 
   public readonly newTask = new FormControl('');
 
-  private todoListContractWithSigner?: Contract;
+  private todoListContractWithSigner?: ethers.Contract;
 
   private readonly _tasks$ = new BehaviorSubject<ITask[]>([]);
 
@@ -48,21 +48,23 @@ export class AppComponent {
     const task = (this.newTask.value as string).trim();
 
     if (task.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      await this.todoListContractWithSigner!.addTask(task);
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const tx = (await this.todoListContractWithSigner!.addTask(task)) as ethers.ContractTransaction;
+
+      // Waiting 1 confirm
+      await tx.wait(1);
+
+      this.updateTasks();
     }
   }
 
-  /**
-   * TODO: Refactor
-   */
   private setup(): void {
     this.ethersSignerService.currentAccount$
       .pipe(
         filter(currentAccount => !!currentAccount),
         untilDestroyed(this)
       )
-      .subscribe(async () => {
+      .subscribe(() => {
         this.todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
           this.ethersContractService.createContract(
             /* eslint-disable @typescript-eslint/no-unsafe-member-access */
@@ -72,11 +74,15 @@ export class AppComponent {
           )
         );
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const tasks = (await this.todoListContractWithSigner.getTasks()) as (Array<unknown> & ITask)[];
-
-        this._tasks$.next(this.mapTasks(tasks));
+        this.updateTasks();
       });
+  }
+
+  private async updateTasks(): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    const tasks = (await this.todoListContractWithSigner!.getTasks()) as (Array<unknown> & ITask)[];
+
+    this._tasks$.next(this.mapTasks(tasks));
   }
 
   private mapTasks(tasks: (Array<unknown> & ITask)[]): ITask[] {
