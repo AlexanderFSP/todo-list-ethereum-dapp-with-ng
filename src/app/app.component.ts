@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
 import { FormControl } from '@angular/forms';
+import { MatSelectionListChange } from '@angular/material/list';
 import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { ethers } from 'ethers';
@@ -8,9 +9,14 @@ import { filter } from 'rxjs/operators';
 
 import TodoList from '../../build/contracts/TodoList.json';
 
-interface ITask {
+interface IEthersTask {
+  id: ethers.BigNumber;
   content: string;
   completed: boolean;
+}
+
+interface ITask extends Omit<IEthersTask, 'id'> {
+  id: number;
 }
 
 @UntilDestroy()
@@ -54,7 +60,26 @@ export class AppComponent {
       // Waiting 1 confirm
       await tx.wait(1);
 
+      this.newTask.reset('');
+
       this.updateTasks();
+    }
+  }
+
+  public async onSelectionChange({ option }: MatSelectionListChange): Promise<void> {
+    const task = option.value as ITask;
+
+    try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      const tx = (await this.todoListContractWithSigner!.toggleTaskCompletion(task.id)) as ethers.ContractTransaction;
+
+      // Waiting 1 confirm
+      await tx.wait(1);
+
+      this.updateTasks();
+    } catch {
+      // Revert selection
+      option.toggle();
     }
   }
 
@@ -80,12 +105,16 @@ export class AppComponent {
 
   private async updateTasks(): Promise<void> {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const tasks = (await this.todoListContractWithSigner!.getTasks()) as (Array<unknown> & ITask)[];
+    const tasks = (await this.todoListContractWithSigner!.getTasks()) as (Array<unknown> & IEthersTask)[];
 
     this._tasks$.next(this.mapTasks(tasks));
   }
 
-  private mapTasks(tasks: (Array<unknown> & ITask)[]): ITask[] {
-    return tasks.map(({ content, completed }) => ({ content, completed }));
+  private mapTasks(tasks: (Array<unknown> & IEthersTask)[]): ITask[] {
+    return tasks.map(({ id, content, completed }) => ({
+      id: id.toNumber(),
+      content,
+      completed
+    }));
   }
 }

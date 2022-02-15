@@ -13,13 +13,18 @@
 
 <mat-card *ngIf="ethersSignerService.currentAccount$ | async" class="tasks-container">
   <mat-card-content>
-    <mat-list role="list">
-      <mat-list-item *ngFor="let task of tasks$ | async; last as last" role="listitem">
-        {{ task | json }}
+    <mat-selection-list role="list" (selectionChange)="onSelectionChange($event)">
+      <mat-list-option
+        *ngFor="let task of tasks$ | async; last as last"
+        [value]="task"
+        [selected]="task.completed"
+        role="listitem"
+      >
+        {{ task.content }}
 
         <mat-divider [inset]="true" *ngIf="!last"></mat-divider>
-      </mat-list-item>
-    </mat-list>
+      </mat-list-option>
+    </mat-selection-list>
 
     <div class="new-task-container">
       <mat-form-field appearance="fill">
