@@ -1,7 +1,41 @@
+@import 'styles/mixins/rhythm.mixin';
+
 :host {
   display: block;
 }
 
-mat-toolbar {
+.toolbar-container,
+.tasks-container {
+  width: 100%;
+  margin: 0 auto;
+  padding-right: rhythm(5);
+  padding-left: rhythm(5);
+
+  @media (min-width: 768px) {
+    padding-right: 0;
+    padding-left: 0;
+    max-width: 696px;
+  }
+
+  @media (min-width: 1024px) {
+    max-width: 928px;
+  }
+
+  @media (min-width: 1280px) {
+    max-width: 1168px;
+  }
+
+  @media (min-width: 1600px) {
+    max-width: 1552px;
+  }
+}
+
+.toolbar-container {
+  display: flex;
+  align-items: center;
   justify-content: space-between;
+}
+
+.tasks-container {
+  margin-top: rhythm(6);
 }

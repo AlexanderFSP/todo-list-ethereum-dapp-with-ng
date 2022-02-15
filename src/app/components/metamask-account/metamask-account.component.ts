@@ -1,6 +1,5 @@
 import { ChangeDetectionStrategy, Component, EventEmitter, Input, Output } from '@angular/core';
-import { Nullable } from '@core/models';
-import { Address } from '@core/models/web3';
+import { Address, Nullable } from '@core/models';
 
 @Component({
   selector: 'app-metamask-account',
@@ -11,6 +10,7 @@ import { Address } from '@core/models/web3';
 export class MetamaskAccountComponent {
   @Input() public isMetamaskInstalled!: Nullable<boolean>;
   @Input() public currentAccount!: Nullable<Address>;
+  @Input() public currentAccountBalance!: Nullable<string>;
 
   @Output() public readonly connect = new EventEmitter<void>();
 

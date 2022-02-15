@@ -1,0 +1,7 @@
+$rhythm-step: 4px;
+
+@function rhythm($val) {
+  $result: $rhythm-step * $val;
+
+  @return $result;
+}

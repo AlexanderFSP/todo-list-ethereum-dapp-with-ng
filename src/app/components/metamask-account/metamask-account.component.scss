@@ -1,10 +1,16 @@
+@import 'styles/mixins/rhythm.mixin';
+
 :host {
   display: block;
 }
 
 .metamask-account {
   &__fox {
-    width: 28px;
-    margin-right: 4px;
+    width: rhythm(7);
+    margin-right: rhythm(1);
+  }
+
+  &__current-account-balance {
+    margin-left: rhythm(2);
   }
 }

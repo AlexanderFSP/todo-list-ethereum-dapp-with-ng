@@ -1,7 +1,13 @@
 <button *ngIf="isMetamaskInstalled; else installMetamaskLinkTpl" mat-raised-button (click)="onClick()">
   <img class="metamask-account__fox" src="assets/images/metamask-fox.svg" alt="" />
 
-  {{ currentAccount || 'Connect wallet' }}
+  <ng-container *ngIf="currentAccount; else connectWalletTpl">
+    <span>{{ currentAccount }}</span>
+
+    <span class="metamask-account__current-account-balance">({{ currentAccountBalance }} ETH)</span>
+  </ng-container>
+
+  <ng-template #connectWalletTpl>Connect wallet</ng-template>
 </button>
 
 <ng-template #installMetamaskLinkTpl>

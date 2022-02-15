@@ -1,15 +1,22 @@
 <mat-toolbar color="primary">
-  <span>todo-list-ethereum-dapp-with-ng</span>
+  <div class="toolbar-container">
+    <span>todo-list-ethereum-dapp-with-ng</span>
 
-  <app-metamask-account
-    [isMetamaskInstalled]="ethersProviderService.isMetamaskInstalled$ | async"
-    [currentAccount]="ethersSignerService.currentAccount$ | async"
-    (connect)="onConnect()"
-  ></app-metamask-account>
+    <app-metamask-account
+      [isMetamaskInstalled]="ethersProviderService.isMetamaskInstalled$ | async"
+      [currentAccount]="ethersSignerService.currentAccount$ | async"
+      [currentAccountBalance]="ethersSignerService.currentAccountBalance$ | async"
+      (connect)="onConnect()"
+    ></app-metamask-account>
+  </div>
 </mat-toolbar>
 
-<mat-list role="list">
-  <mat-list-item *ngFor="let task of tasks$ | async" role="listitem">
-    {{ task | json }}
-  </mat-list-item>
-</mat-list>
+<mat-card class="tasks-container">
+  <mat-card-content>
+    <mat-list role="list">
+      <mat-list-item *ngFor="let task of tasks$ | async" role="listitem">
+        {{ task | json }}
+      </mat-list-item>
+    </mat-list>
+  </mat-card-content>
+</mat-card>

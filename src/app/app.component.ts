@@ -1,7 +1,7 @@
 import { Component } from '@angular/core';
 import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
+import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject, Observable } from 'rxjs';
-import { filter } from 'rxjs/operators';
 
 import TodoList from '../../build/contracts/TodoList.json';
 
@@ -10,6 +10,7 @@ interface ITask {
   completed: boolean;
 }
 
+@UntilDestroy()
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -40,23 +41,29 @@ export class AppComponent {
    * TODO: Refactor
    */
   private setup(): void {
-    this.ethersSignerService.currentAccount$.pipe(filter(currentAccount => !!currentAccount)).subscribe(async () => {
-      const todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
-        this.ethersContractService.createContract(
-          /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-          TodoList.networks[5777].address,
-          TodoList.abi
-          /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-        )
-      );
+    this.ethersSignerService.currentAccount$.pipe(untilDestroyed(this)).subscribe(async currentAccount => {
+      if (currentAccount) {
+        const todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
+          this.ethersContractService.createContract(
+            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
+            TodoList.networks[5777].address,
+            TodoList.abi
+            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
+          )
+        );
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      const tasks = (await todoListContractWithSigner.getTasks()) as (Array<unknown> & ITask)[];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        const tasks = (await todoListContractWithSigner.getTasks()) as (Array<unknown> & ITask)[];
 
-      this._tasks$.next(this.mapTasks(tasks));
+        this._tasks$.next(this.mapTasks(tasks));
 
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      // await todoListContractWithSigner.addTask('task');
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+        // await todoListContractWithSigner.addTask('task');
+
+        return;
+      }
+
+      this._tasks$.next([]);
     });
   }
 
