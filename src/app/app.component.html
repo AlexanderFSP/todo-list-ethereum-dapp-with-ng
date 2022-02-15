@@ -29,7 +29,7 @@
     <div class="new-task-container">
       <mat-form-field appearance="fill">
         <mat-label>Input</mat-label>
-        <input [formControl]="newTask" matInput />
+        <input [formControl]="newTask" matInput autocomplete="off" />
       </mat-form-field>
 
       <button class="add-task-button" mat-raised-button color="primary" (click)="onAddTask()">Add task</button>
