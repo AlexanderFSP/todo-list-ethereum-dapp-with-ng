@@ -1,7 +1,10 @@
 import { Component } from '@angular/core';
+import { FormControl } from '@angular/forms';
 import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
+import { Contract } from 'ethers';
 import { BehaviorSubject, Observable } from 'rxjs';
+import { filter } from 'rxjs/operators';
 
 import TodoList from '../../build/contracts/TodoList.json';
 
@@ -18,6 +21,10 @@ interface ITask {
 })
 export class AppComponent {
   public tasks$: Observable<ITask[]>;
+
+  public readonly newTask = new FormControl('');
+
+  private todoListContractWithSigner?: Contract;
 
   private readonly _tasks$ = new BehaviorSubject<ITask[]>([]);
 
@@ -37,13 +44,26 @@ export class AppComponent {
     this.ethersProviderService.requestAccounts();
   }
 
+  public async onAddTask(): Promise<void> {
+    const task = (this.newTask.value as string).trim();
+
+    if (task.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      await this.todoListContractWithSigner!.addTask(task);
+    }
+  }
+
   /**
    * TODO: Refactor
    */
   private setup(): void {
-    this.ethersSignerService.currentAccount$.pipe(untilDestroyed(this)).subscribe(async currentAccount => {
-      if (currentAccount) {
-        const todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
+    this.ethersSignerService.currentAccount$
+      .pipe(
+        filter(currentAccount => !!currentAccount),
+        untilDestroyed(this)
+      )
+      .subscribe(async () => {
+        this.todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
           this.ethersContractService.createContract(
             /* eslint-disable @typescript-eslint/no-unsafe-member-access */
             TodoList.networks[5777].address,
@@ -53,18 +73,10 @@ export class AppComponent {
         );
 
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        const tasks = (await todoListContractWithSigner.getTasks()) as (Array<unknown> & ITask)[];
+        const tasks = (await this.todoListContractWithSigner.getTasks()) as (Array<unknown> & ITask)[];
 
         this._tasks$.next(this.mapTasks(tasks));
-
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-        // await todoListContractWithSigner.addTask('task');
-
-        return;
-      }
-
-      this._tasks$.next([]);
-    });
+      });
   }
 
   private mapTasks(tasks: (Array<unknown> & ITask)[]): ITask[] {

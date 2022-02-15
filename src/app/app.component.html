@@ -11,12 +11,23 @@
   </div>
 </mat-toolbar>
 
-<mat-card class="tasks-container">
+<mat-card *ngIf="ethersSignerService.currentAccount$ | async" class="tasks-container">
   <mat-card-content>
     <mat-list role="list">
-      <mat-list-item *ngFor="let task of tasks$ | async" role="listitem">
+      <mat-list-item *ngFor="let task of tasks$ | async; last as last" role="listitem">
         {{ task | json }}
+
+        <mat-divider [inset]="true" *ngIf="!last"></mat-divider>
       </mat-list-item>
     </mat-list>
+
+    <div class="new-task-container">
+      <mat-form-field appearance="fill">
+        <mat-label>Input</mat-label>
+        <input [formControl]="newTask" matInput />
+      </mat-form-field>
+
+      <button class="add-task-button" mat-raised-button color="primary" (click)="onAddTask()">Add task</button>
+    </div>
   </mat-card-content>
 </mat-card>
