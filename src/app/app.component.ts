@@ -1,23 +1,11 @@
 import { Component, ViewChild } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { MatSelectionList, MatSelectionListChange } from '@angular/material/list';
-import { EthersContractService, EthersProviderService, EthersSignerService } from '@core/services';
+import { EthersProviderService, EthersSignerService } from '@core/services';
+import { ITaskView, ITodoListContract, TodoListContractService } from '@core/services/todo-list-contract';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
-import { ethers } from 'ethers';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
-
-import TodoList from '../../build/contracts/TodoList.json';
-
-interface IEthersTask {
-  id: ethers.BigNumber;
-  content: string;
-  completed: boolean;
-}
-
-interface ITask extends Omit<IEthersTask, 'id'> {
-  id: number;
-}
 
 @UntilDestroy()
 @Component({
@@ -28,18 +16,18 @@ interface ITask extends Omit<IEthersTask, 'id'> {
 export class AppComponent {
   @ViewChild(MatSelectionList) public selectionList!: MatSelectionList;
 
-  public tasks$: Observable<ITask[]>;
+  public tasks$: Observable<ITaskView[]>;
 
   public readonly newTask = new FormControl('');
 
-  private todoListContractWithSigner?: ethers.Contract;
+  private todoListContractWithSigner?: ITodoListContract;
 
-  private readonly _tasks$ = new BehaviorSubject<ITask[]>([]);
+  private readonly _tasks$ = new BehaviorSubject<ITaskView[]>([]);
 
   constructor(
     public readonly ethersProviderService: EthersProviderService,
     public readonly ethersSignerService: EthersSignerService,
-    private readonly ethersContractService: EthersContractService
+    private readonly todoListContractService: TodoListContractService
   ) {
     this.tasks$ = this._tasks$.asObservable();
 
@@ -56,11 +44,7 @@ export class AppComponent {
     const task = (this.newTask.value as string).trim();
 
     if (task.length > 0) {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      const tx = (await this.todoListContractWithSigner!.addTask(task)) as ethers.ContractTransaction;
-
-      // Waiting 1 confirm
-      await tx.wait(1);
+      await this.todoListContractService.addTask(this.todoListContractWithSigner!, task);
 
       this.newTask.reset('');
 
@@ -71,14 +55,10 @@ export class AppComponent {
   public async onSelectionChange({ option }: MatSelectionListChange): Promise<void> {
     this.selectionList.setDisabledState(true);
 
-    const task = option.value as ITask;
+    const task = option.value as ITaskView;
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
-      const tx = (await this.todoListContractWithSigner!.toggleTaskCompletion(task.id)) as ethers.ContractTransaction;
-
-      // Waiting 1 confirm
-      await tx.wait(1);
+      await this.todoListContractService.toggleTaskCompletion(this.todoListContractWithSigner!, task.id);
 
       this.updateTasks();
     } catch {
@@ -97,12 +77,7 @@ export class AppComponent {
       )
       .subscribe(() => {
         this.todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
-          this.ethersContractService.createContract(
-            /* eslint-disable @typescript-eslint/no-unsafe-member-access */
-            TodoList.networks[5777].address,
-            TodoList.abi
-            /* eslint-enable @typescript-eslint/no-unsafe-member-access */
-          )
+          this.todoListContractService.create()
         );
 
         this.updateTasks();
@@ -110,17 +85,8 @@ export class AppComponent {
   }
 
   private async updateTasks(): Promise<void> {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    const tasks = (await this.todoListContractWithSigner!.getTasks()) as (Array<unknown> & IEthersTask)[];
+    const tasks = await this.todoListContractService.getTasks(this.todoListContractWithSigner!);
 
-    this._tasks$.next(this.mapTasks(tasks));
-  }
-
-  private mapTasks(tasks: (Array<unknown> & IEthersTask)[]): ITask[] {
-    return tasks.map(({ id, content, completed }) => ({
-      id: id.toNumber(),
-      content,
-      completed
-    }));
+    this._tasks$.next(tasks);
   }
 }

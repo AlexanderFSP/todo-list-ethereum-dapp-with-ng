@@ -32,8 +32,8 @@ export class EthersSignerService {
     this.updateCurrentAccountBalance();
   }
 
-  public connectContractWithSigner(contract: ethers.Contract): ethers.Contract {
-    return contract.connect(this.signer!);
+  public connectContractWithSigner<T extends ethers.Contract>(contract: T): T {
+    return contract.connect(this.signer!) as T;
   }
 
   private async updateCurrentAccount(): Promise<void> {
