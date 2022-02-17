@@ -26,6 +26,7 @@
     "@angular/router": "~12.2.0",
     "@metamask/detect-provider": "1.2.0",
     "@ng-web-apis/common": "2.0.0",
+    "@ngneat/reactive-forms": "4.0.4",
     "@ngneat/until-destroy": "8.1.4",
     "ethers": "5.5.4",
     "rxjs": "~6.6.0",

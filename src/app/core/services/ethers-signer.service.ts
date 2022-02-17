@@ -18,7 +18,7 @@ export class EthersSignerService {
   private signer?: ethers.Signer;
 
   private readonly _currentAccount$ = new BehaviorSubject<Nullable<Address>>(null);
-  private readonly _currentAccountBalance$ = new BehaviorSubject<Nullable<Address>>(null);
+  private readonly _currentAccountBalance$ = new BehaviorSubject<Nullable<string>>(null);
 
   constructor(private readonly ngZone: NgZone) {
     this.currentAccount$ = this._currentAccount$.asObservable();
@@ -32,8 +32,21 @@ export class EthersSignerService {
     this.updateCurrentAccountBalance();
   }
 
-  public connectContractWithSigner<T extends ethers.Contract>(contract: T): T {
+  public connectWithContract<T extends ethers.Contract>(contract: T): T {
     return contract.connect(this.signer!) as T;
+  }
+
+  public async updateCurrentAccountBalance(): Promise<void> {
+    let balance: Nullable<string> = null;
+
+    try {
+      balance = ethers.utils.formatEther(await this.signer!.getBalance());
+    } catch {
+    } finally {
+      if (balance !== this._currentAccountBalance$.value) {
+        this.ngZone.run(() => this._currentAccountBalance$.next(balance));
+      }
+    }
   }
 
   private async updateCurrentAccount(): Promise<void> {
@@ -44,17 +57,6 @@ export class EthersSignerService {
     } catch {
     } finally {
       this.ngZone.run(() => this._currentAccount$.next(nullable(address)));
-    }
-  }
-
-  private async updateCurrentAccountBalance(): Promise<void> {
-    let balance: string;
-
-    try {
-      balance = ethers.utils.formatEther(await this.signer!.getBalance());
-    } catch {
-    } finally {
-      this.ngZone.run(() => this._currentAccountBalance$.next(nullable(balance)));
     }
   }
 }

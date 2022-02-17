@@ -1,8 +1,8 @@
 import { Component, ViewChild } from '@angular/core';
-import { FormControl } from '@angular/forms';
 import { MatSelectionList, MatSelectionListChange } from '@angular/material/list';
 import { EthersProviderService, EthersSignerService } from '@core/services';
 import { ITaskView, ITodoListContract, TodoListContractService } from '@core/services/todo-list-contract';
+import { FormControl } from '@ngneat/reactive-forms';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { filter } from 'rxjs/operators';
@@ -18,7 +18,7 @@ export class AppComponent {
 
   public tasks$: Observable<ITaskView[]>;
 
-  public readonly newTask = new FormControl('');
+  public readonly newTask = new FormControl<string>('');
 
   private todoListContractWithSigner?: ITodoListContract;
 
@@ -41,14 +41,16 @@ export class AppComponent {
   }
 
   public async onAddTask(): Promise<void> {
-    const task = (this.newTask.value as string).trim();
+    const task = this.newTask.value.trim();
 
     if (task.length > 0) {
-      await this.todoListContractService.addTask(this.todoListContractWithSigner!, task);
+      try {
+        await this.todoListContractService.addTask(this.todoListContractWithSigner!, task);
 
-      this.newTask.reset('');
+        this.newTask.reset('');
 
-      this.updateTasks();
+        this.updateTasks();
+      } catch {}
     }
   }
 
@@ -76,7 +78,7 @@ export class AppComponent {
         untilDestroyed(this)
       )
       .subscribe(() => {
-        this.todoListContractWithSigner = this.ethersSignerService.connectContractWithSigner(
+        this.todoListContractWithSigner = this.ethersSignerService.connectWithContract(
           this.todoListContractService.create()
         );
 

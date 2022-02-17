@@ -47,6 +47,9 @@ export class EthersProviderService {
     if (provider) {
       this.provider = new ethers.providers.Web3Provider(provider);
 
+      // Update account balance when a new block mined
+      this.provider.on('block', () => this.ethersSignerService.updateCurrentAccountBalance());
+
       this._isMetamaskInstalled$.next(true);
       this._isProviderInitialized$.next(true);
 

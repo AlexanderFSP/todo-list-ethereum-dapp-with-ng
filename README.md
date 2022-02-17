@@ -1,4 +1,4 @@
-![Demo](./src/assets/images/demo.gif)
+![Demo](./src/assets/images/demo.gif?v=1)
 
 # TodoListEthereumDappWithNg
 
